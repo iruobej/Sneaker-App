@@ -10,11 +10,15 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -149,8 +153,8 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ){
-            items(trainers.size) {index ->
-                TrainerItem(trainers[index])
+            items(trainers) {trainer ->
+                TrainerItem(trainer)
             }
         }
         Text(
@@ -161,14 +165,23 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ){
-            items(trainers.size) {index ->
-                TrainerItem(trainers[index])
+            items(trainers) {trainer ->
+                TrainerItem(trainer)
             }
         }
         Text(
             text = "Latest Drops",
             fontSize = 24.sp
         )
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ){
+            itemsIndexed(trainers.chunked(2)){_, pair ->
+                TrainerRow(pair)
+            }
+        }
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -203,5 +216,26 @@ fun TrainerItem(trainer: Trainer){
         )
         Text(trainer.name, fontSize = 16.sp, modifier = Modifier.padding(top = 8.dp))
         Text(trainer.price, fontSize = 14.sp, color = Color.Gray, modifier = Modifier.padding(top = 4.dp))
+    }
+}
+
+@Composable
+fun TrainerRow(trainers: List<Trainer>){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ){
+        trainers.forEach{trainer ->
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+            ){
+                TrainerItem(trainer)
+            }
+        }
+        if(trainers.size < 2){
+            Spacer(modifier = Modifier.weight(1f))
+        }
     }
 }
