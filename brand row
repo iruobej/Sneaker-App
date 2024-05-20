@@ -13,10 +13,19 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.IconButton
 //import androidx.compose.material3.icons.Filled.Search
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -185,6 +194,7 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun TrainerDetailScreen(navController: NavController, trainerName: String?) {
+        var showDialog by remember {mutableStateOf(false)}
         Column(modifier = Modifier.fillMaxSize()){
             TopBar()
             Column(modifier = Modifier
@@ -214,9 +224,7 @@ class MainActivity : ComponentActivity() {
                         Button(
                             onClick = {
                                 if (trainer.name == "Jordan 4 Bred") {
-                                    val url = "https://www.laced.com/products/air-jordan-4-og-bred-reimagined?eu_size=44&preferred_currency=GBP&preferred_location=GB&size_system=UK&uk_size=9&us_size=10&&utm_medium=ppc&utm_source=google&utm_term=&campaignid=18247925162&adgroupid=&utm_campaign=PMax+-+DISC+-+UK+-+Jordan+4&gad_source=1&gclid=Cj0KCQjw6auyBhDzARIsALIo6v_xW8MMyTGkSxblG5NgfekcNQU4vNrgJSwAgaPnJBO8r8BBxXyQk20aAuIVEALw_wcB"
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                                    navController.context.startActivity(intent)
+                                    showDialog = true
                                 }
 
                             },
@@ -238,6 +246,28 @@ class MainActivity : ComponentActivity() {
                 }
             }
             NavBar()
+        }
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showDialog = false
+                        val url = "https://www.laced.com/products/air-jordan-4-og-bred-reimagined?eu_size=44&preferred_currency=GBP&preferred_location=GB&size_system=UK&uk_size=9&us_size=10&&utm_medium=ppc&utm_source=google&utm_term=&campaignid=18247925162&adgroupid=&utm_campaign=PMax+-+DISC+-+UK+-+Jordan+4&gad_source=1&gclid=Cj0KCQjw6auyBhDzARIsALIo6v_xW8MMyTGkSxblG5NgfekcNQU4vNrgJSwAgaPnJBO8r8BBxXyQk20aAuIVEALw_wcB"
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        navController.context.startActivity(intent)
+                    }){
+                        Text("Yes")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDialog = false }) {
+                        Text("No")
+                    }
+                },
+                title = { Text("Permission Required")},
+                text = { Text("Do you want give SneakerSpot permission to open the browser?")}
+            )
         }
     }
 @Composable
