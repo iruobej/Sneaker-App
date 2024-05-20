@@ -2,6 +2,8 @@ package com.example.sneakerspot2
 
 import android.os.Bundle
 import android.widget.Button
+import android.content.Intent
+import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -210,7 +212,14 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.padding(top = 4.dp)
                         )
                         Button(
-                            onClick = {},
+                            onClick = {
+                                if (trainer.name == "Jordan 4 Bred") {
+                                    val url = "https://www.laced.com/products/air-jordan-4-og-bred-reimagined?eu_size=44&preferred_currency=GBP&preferred_location=GB&size_system=UK&uk_size=9&us_size=10&&utm_medium=ppc&utm_source=google&utm_term=&campaignid=18247925162&adgroupid=&utm_campaign=PMax+-+DISC+-+UK+-+Jordan+4&gad_source=1&gclid=Cj0KCQjw6auyBhDzARIsALIo6v_xW8MMyTGkSxblG5NgfekcNQU4vNrgJSwAgaPnJBO8r8BBxXyQk20aAuIVEALw_wcB"
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                    navController.context.startActivity(intent)
+                                }
+
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 16.dp)
