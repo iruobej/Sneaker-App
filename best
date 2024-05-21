@@ -179,7 +179,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
-            NavBar()
+            NavBar(navController)
         }
     }
 
@@ -187,6 +187,20 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun TrainerDetailScreen(navController: NavController, trainerName: String?) {
         var showDialog by remember {mutableStateOf(false)}
+        fun shareLink() {
+            val shareText = "Hey, check out this sneaker I found on SneakerSpot! " +
+                    "https://www.laced.com/products/air-jordan-4-og-bred-reimagined?" +
+                    "eu_size=44&preferred_currency=GBP&preferred_location=GB&size_system=UK&uk_size=9&us_size=10&&" +
+                    "utm_medium=ppc&utm_source=google&utm_term=&campaignid=18247925162&adgroupid=&" +
+                    "utm_campaign=PMax+-+DISC+-+UK+-+Jordan+4&gad_source=1&gclid=Cj0KCQjw6auyBhDzARIsALIo6v_xW8MMyTGkSxblG5NgfekcNQU4vNrgJSwAgaPnJBO8r8BBxXyQk20aAuIVEALw_wcB"
+            val sendIntent: Intent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TEXT, shareText)
+                type = "text/plain"
+            }
+            val shareIntent = Intent.createChooser(sendIntent, null)
+            navController.context.startActivity(shareIntent)
+        }
         Column(modifier = Modifier.fillMaxSize()){
             TopBar()
             Column(modifier = Modifier
@@ -234,10 +248,30 @@ class MainActivity : ComponentActivity() {
                                 fontSize = 30.sp
                             )
                         }
+                        Button(
+                            onClick = {
+                                if (trainer.name == "Jordan 4 Bred") {
+                                    shareLink()
+                                }
+
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 16.dp)
+                                .height(70.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.LightGray
+                            )
+                        ){
+                            Text(
+                                stringResource(R.string.share),
+                                fontSize = 30.sp
+                            )
+                        }
                     }
                 }
             }
-            NavBar()
+            NavBar(navController)
         }
         if (showDialog) {
             AlertDialog(
@@ -311,7 +345,7 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun NavBar () {
+    fun NavBar (navController: NavController) {
         //Navigation Bar
         Row(
             modifier = Modifier
@@ -321,10 +355,10 @@ class MainActivity : ComponentActivity() {
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = { /*TODO*/ }) {
+            IconButton(onClick = { navController.navigate("home")}) {
                 Icon(
-                    painter = painterResource(id = R.drawable.sharp_account_circle_24),
-                    contentDescription = "Profile"
+                    painter = painterResource(id = R.drawable.outline_home_24),
+                    contentDescription = "Home"
                 )
             }
             //Favorited Items
