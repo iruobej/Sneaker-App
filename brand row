@@ -58,7 +58,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.navArgument
-import com.example.sneakerspot2.ui.theme.SneakerSpot2Theme
+import com.example.sneakerspot.ui.theme.SneakerSpotTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -262,53 +262,53 @@ class MainActivity : ComponentActivity() {
             )
         }
     }
-@Composable
-fun TopBar (modifier: Modifier = Modifier){
-    val startColor = Color(0xFF67D3AC) //Start color: 67D3AC
-    val endColor = Color(0xFF00FF66)
-    val gradientBrush = Brush.verticalGradient( //Be careful of using ( instead of {
-        colors = listOf(startColor, endColor),
-        startY = 0f, //starts top left
-        endY = Float.POSITIVE_INFINITY //ends bottom right
-    )
-    var text by remember { mutableStateOf("") } //a variable to keep the value of the TextField
-    val context =
-        LocalContext.current //get the activity context within a composable function, use "this" instead in an activity
-    //var inidata by remember { mutableStateOf(emptyArray<String>()) } //an array of String that will contain the dummy weather data, initially empty
+    @Composable
+    fun TopBar (modifier: Modifier = Modifier){
+        val startColor = Color(0xFF67D3AC) //Start color: 67D3AC
+        val endColor = Color(0xFF00FF66)
+        val gradientBrush = Brush.verticalGradient( //Be careful of using ( instead of {
+            colors = listOf(startColor, endColor),
+            startY = 0f, //starts top left
+            endY = Float.POSITIVE_INFINITY //ends bottom right
+        )
+        var text by remember { mutableStateOf("") } //a variable to keep the value of the TextField
+        val context =
+            LocalContext.current //get the activity context within a composable function, use "this" instead in an activity
+        //var inidata by remember { mutableStateOf(emptyArray<String>()) } //an array of String that will contain the dummy weather data, initially empty
 
 
-    Box(
-        modifier = Modifier
-            .background(brush = gradientBrush)
-            .padding(15.dp)
-            .fillMaxWidth()
-    ) {
-        Row {
-            Column {
-                Button(
-                    onClick = { },
-                    modifier = Modifier.align(Alignment.Start)
-                ) {
-                    Text(stringResource(R.string.search))
+        Box(
+            modifier = Modifier
+                .background(brush = gradientBrush)
+                .padding(15.dp)
+                .fillMaxWidth()
+        ) {
+            Row {
+                Column {
+                    Button(
+                        onClick = { },
+                        modifier = Modifier.align(Alignment.Start)
+                    ) {
+                        Text(stringResource(R.string.search))
+                    }
                 }
-            }
-            Column {
-                TextField(
-                    value = text,
-                    label = { Text(stringResource(R.string.search_trainer)) },
-                    maxLines = 1,
-                    onValueChange = {
-                        text = it
-                    }, //onValueChange to update the state of the TextField synchronously and immediately
-                    modifier = modifier
-                        //.padding(0.dp, 0.dp, 0.dp, 16.dp)//add padding between child elements
-                        //.fillMaxWidth()//make the TextField fill the width of the screen
-                        .align(Alignment.End)
-                )
+                Column {
+                    TextField(
+                        value = text,
+                        label = { Text(stringResource(R.string.search_trainer)) },
+                        maxLines = 1,
+                        onValueChange = {
+                            text = it
+                        }, //onValueChange to update the state of the TextField synchronously and immediately
+                        modifier = modifier
+                            //.padding(0.dp, 0.dp, 0.dp, 16.dp)//add padding between child elements
+                            //.fillMaxWidth()//make the TextField fill the width of the screen
+                            .align(Alignment.End)
+                    )
+                }
             }
         }
     }
-}
 
     @Composable
     fun NavBar () {
