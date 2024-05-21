@@ -1,0 +1,401 @@
+package com.example.sneakerspot
+
+import android.os.Bundle
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.IconButton
+//import androidx.compose.material3.icons.Filled.Search
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.Button //NEEDED TO IMPORT
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.NavType
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.navArgument
+import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
+import com.example.sneakerspot.ui.theme.SneakerSpotTheme
+import com.google.firebase.FirebaseApp
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+
+data class Trainer(val name: String = "", val imageUrl: String = "", val price: String = "")
+
+class MainActivity : ComponentActivity() {
+    private lateinit var database : DatabaseReference //to fetch data from the database
+    private val trainers = mutableStateListOf<Trainer>()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this)
+        setContent {
+            SneakerSpotTheme {
+                // A surface container using the 'background' color from the theme
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    val navController = rememberNavController()
+                    NavHost(navController = navController, startDestination = "home") {
+                        composable("home") {
+                            HomeScreen(navController)
+                        }
+                        composable(
+                            route = "trainer_detail/{trainerName}",
+                            arguments = listOf(navArgument("trainerName") {
+                                type = NavType.StringType
+                            })
+                        ) { backStackEntry ->
+                            val trainerName = backStackEntry.arguments?.getString("trainerName")
+                            TrainerDetailScreen(navController, trainerName)
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
+        val context = LocalContext.current
+        val trainers = (LocalContext.current as MainActivity).trainers // Using trainers from MainActivity
+        //Firebase data fetching
+        LaunchedEffect(Unit) {
+            database = FirebaseDatabase.getInstance().getReference("trainers")
+            database.addValueEventListener(object: ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    trainers.clear()
+                    for (trainerSnapshot in snapshot.children) {
+                        val name = trainerSnapshot.child("name").getValue(String::class.java) ?: ""
+                        val price = trainerSnapshot.child("price").getValue(String::class.java) ?: ""
+                        val imageUrl = trainerSnapshot.child("imageUrl").getValue(String::class.java) ?: ""
+                        val trainer = Trainer(name, price, imageUrl)
+                        trainers.add(trainer)
+
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(context, "Failed to load trainers", Toast.LENGTH_SHORT).show()
+                }
+            })
+        }
+
+        Column(modifier = Modifier.fillMaxSize()) {
+            TopBar()
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(16.dp)
+            ) {
+                val brands = listOf("Nike", "New Balance", "Jordan", "Adidas")
+                Text(
+                    stringResource(R.string.brands),
+                    fontSize = 24.sp
+                )
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(brands) { brand ->
+                        Button(onClick = {}) {
+                            Text(brand)
+                        }
+                    }
+                }
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    item {
+                        Text(
+                            text = "For Yous",
+                            fontSize = 24.sp
+                        )
+                        LazyRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            items(trainers) { trainer ->
+                                TrainerItem(trainer) {
+                                    navController.navigate("trainer_detail/${trainer.name}")
+                                }
+                            }
+                        }
+                    }
+                    item {
+                        Text(
+                            text = "Trending",
+                            fontSize = 24.sp
+                        )
+                        LazyRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            items(trainers) { trainer ->
+                                TrainerItem(trainer) {
+                                    navController.navigate("trainer_detail/${trainer.name}")
+                                }
+                            }
+                        }
+                    }
+                    item {
+                        Text(
+                            text = "Latest Drops",
+                            fontSize = 24.sp
+                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            for (row in trainers.chunked(2)) {
+                                for (trainer in row) {
+                                    TrainerItem(trainer) {
+                                        navController.navigate("trainer_detail/${trainer.name}")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            NavBar()
+        }
+    }
+
+    @Composable
+    fun TrainerDetailScreen(navController: NavController, trainerName: String?) {
+        val trainers = (LocalContext.current as MainActivity).trainers // Use trainers from MainActivity
+        val trainer = trainers.find { it.name == trainerName }
+        var showDialog by remember { mutableStateOf(false) }
+        Column(modifier = Modifier.fillMaxSize()) {
+            TopBar()
+            Column(
+                modifier = Modifier
+                    .weight(1f) //To push nav bar to bottom of the screen
+                    .padding(16.dp)
+            ) {
+
+                if (trainer != null) {
+                    Column(
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            trainer.name,
+                            fontSize = 24.sp,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                        Image(
+                            painter = rememberAsyncImagePainter(model = trainer.imageUrl),
+                            contentDescription = trainer.name,
+                            modifier = Modifier.height(200.dp),
+                            contentScale = ContentScale.Crop
+                        )
+                        Text(
+                            trainer.price,
+                            fontSize = 24.sp,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                        Button(
+                            onClick = {
+                                if (trainer.name == "Jordan 4 Bred") {
+                                    showDialog = true
+                                }
+
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 16.dp)
+                                .height(70.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF67D3AC)
+                            )
+                        ) {
+                            Text(
+                                stringResource(R.string.go_to_site),
+                                color = Color.White,
+                                fontSize = 30.sp
+                            )
+                        }
+                    }
+                }
+            }
+            NavBar()
+        }
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showDialog = false
+                        val url =
+                            "https://www.laced.com/products/air-jordan-4-og-bred-reimagined?eu_size=44&preferred_currency=GBP&preferred_location=GB&size_system=UK&uk_size=9&us_size=10&&utm_medium=ppc&utm_source=google&utm_term=&campaignid=18247925162&adgroupid=&utm_campaign=PMax+-+DISC+-+UK+-+Jordan+4&gad_source=1&gclid=Cj0KCQjw6auyBhDzARIsALIo6v_xW8MMyTGkSxblG5NgfekcNQU4vNrgJSwAgaPnJBO8r8BBxXyQk20aAuIVEALw_wcB"
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        navController.context.startActivity(intent)
+                    }) {
+                        Text("Yes")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDialog = false }) {
+                        Text("No")
+                    }
+                },
+                title = { Text("Permission Required") },
+                text = { Text("Do you want give SneakerSpot permission to open the browser?") }
+            )
+        }
+    }
+
+    @Composable
+    fun TopBar(modifier: Modifier = Modifier) {
+        val startColor = Color(0xFF67D3AC) //Start color: 67D3AC
+        val endColor = Color(0xFF00FF66)
+        val gradientBrush = Brush.verticalGradient( //Be careful of using ( instead of {
+            colors = listOf(startColor, endColor),
+            startY = 0f, //starts top left
+            endY = Float.POSITIVE_INFINITY //ends bottom right
+        )
+        var text by remember { mutableStateOf("") } //a variable to keep the value of the TextField
+        val context =
+            LocalContext.current //get the activity context within a composable function, use "this" instead in an activity
+        //var inidata by remember { mutableStateOf(emptyArray<String>()) } //an array of String that will contain the dummy weather data, initially empty
+
+
+        Box(
+            modifier = Modifier
+                .background(brush = gradientBrush)
+                .padding(15.dp)
+                .fillMaxWidth()
+        ) {
+            Row {
+                Column {
+                    Button(
+                        onClick = { },
+                        modifier = Modifier.align(Alignment.Start)
+                    ) {
+                        Text(stringResource(R.string.search))
+                    }
+                }
+                Column {
+                    TextField(
+                        value = text,
+                        label = { Text(stringResource(R.string.search_trainer)) },
+                        maxLines = 1,
+                        onValueChange = {
+                            text = it
+                        }, //onValueChange to update the state of the TextField synchronously and immediately
+                        modifier = modifier
+                            //.padding(0.dp, 0.dp, 0.dp, 16.dp)//add padding between child elements
+                            //.fillMaxWidth()//make the TextField fill the width of the screen
+                            .align(Alignment.End)
+                    )
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun NavBar() {
+        //Navigation Bar
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .background(Color(0xFFD3D3D3)),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { /*TODO*/ }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.sharp_account_circle_24),
+                    contentDescription = "Profile"
+                )
+            }
+            //Favorited Items
+            IconButton(onClick = { /*TODO*/ }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.heart_70),
+                    contentDescription = "Heart"
+                )
+            }
+        }
+    }
+
+    @Composable
+    fun TrainerItem(trainer: Trainer, onItemClick: () -> Unit) {
+        Column(
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth()
+                .clickable(onClick = onItemClick), //To respond to click events
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = rememberAsyncImagePainter(model = trainer.imageUrl),
+                contentDescription = trainer.name,
+                modifier = Modifier.height(100.dp),
+                contentScale = ContentScale.Crop
+            )
+            Text(trainer.name, fontSize = 16.sp, modifier = Modifier.padding(top = 8.dp))
+            Text(
+                trainer.price,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
+    }
+}
+
+
